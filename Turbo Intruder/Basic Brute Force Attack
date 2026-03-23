@@ -1,1 +1,27 @@
-#
+def queueRequests(target, wordlists):
+    # this sets up the speed and connection style
+    # increase parameter concurrentConnections for more speed (careful with the rate as it affects status codes. if the server is blocking u, lower it)
+    engine = RequestEngine(endpoint=target.endpoint,
+                           concurrentConnections=5,
+                           requestsPerConnection=100,
+                           pipeline=False
+                           )
+
+    # the payload; this defines what to inject into the %s
+    
+    
+# Uncommoent the examples if want to use.
+# Ex A: Numbers from 1 to 1000
+    for i in range(1, 1001):
+        engine.queue(target.req, str(i))
+
+    # Ex B: Using a wordlist, the directory inside variable open() is the wordlist 
+    # for word in open('/usr/share/dict/words'):
+    #     engine.queue(target.req, word.rstrip())
+
+def handleResponse(req, interesting):
+    # filter results
+    # only show stuff that might matter
+    # skip 404s unless Burp flags it as interesting
+    if interesting or req.status != 404:
+        table.add(req)
