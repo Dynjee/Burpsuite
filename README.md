@@ -1,2 +1,2 @@
 # Burpsuite
-Turbo intruder, python, etc.
+Web Application Vulnerabilities.
