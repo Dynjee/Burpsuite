@@ -1,11 +1,4 @@
-# 🛡️ SQL Injection Cheat Sheet
-
-![SQLi](https://img.shields.io/badge/Cybersecurity-SQL%20Injection-red?style=for-the-badge)
-
----
-
-## 📌 Cheat Sheet
-# SQL Injection Cheat Sheet
+# SQL Injection Cheat Sheet 📌
 
 This SQL injection cheat sheet contains examples of useful syntax that you can use to perform a variety of tasks that often arise when performing SQL injection attacks.
 
